@@ -3,16 +3,10 @@ pipeline {
 
     environment {
         APP_NAME = "spring-petclinic"
-        BUILD_DIR = "target"
     }
 
     parameters {
         string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
-    }
-
-    options {
-        timeout(time: 15, unit: 'MINUTES')
-        buildDiscarder(logRotator(numToKeepStr: '5'))
     }
 
     tools {
@@ -29,16 +23,10 @@ pipeline {
 
         stage('Build and Package') {
             steps {
-                bat 'mvn package'
+                bat 'mvn clean package'
             }
         }
 
-        stage('Archive Artifact') {
-            steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-                echo "Artifact archived successfully from ${BUILD_DIR}"
-            }
-        }
     }
 
     post {
