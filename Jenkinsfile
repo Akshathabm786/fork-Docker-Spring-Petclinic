@@ -5,10 +5,6 @@ pipeline {
         APP_NAME = "spring-petclinic"
     }
 
-    parameters {
-        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
-    }
-
     stages {
         stage('Git Checkout') {
             steps {
