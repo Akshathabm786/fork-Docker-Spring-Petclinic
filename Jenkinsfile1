@@ -8,42 +8,43 @@ node {
     def MAVEN_HOME = tool name: 'maven-home', type: 'maven'
     env.PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${env.PATH}"
 
-    // --- Pipeline parameters ---
+    // --- Pipeline properties ---
     properties([
         parameters([
             string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
         ]),
         pipelineTriggers([
-            githubPush()  //Webhook trigger for GitHub push events
-        ]),
-        timeout(time: 10, unit: 'MINUTES')
+            githubPush()  // Webhook trigger for GitHub push events
+        ])
     ])
 
-    try {
-        stage('Git Checkout') {
-            echo "Checking out branch: ${params.BRANCH}"
-            git branch: "${params.BRANCH}", url: 'https://github.com/Sumukha47/spring-petclinic.git'
-        }
+    // ✅ Correct usage: timeout wraps your entire build logic
+    timeout(time: 10, unit: 'MINUTES') {
+        try {
+            stage('Git Checkout') {
+                echo "Checking out branch: ${params.BRANCH}"
+                git branch: "${params.BRANCH}", url: 'https://github.com/Sumukha47/spring-petclinic.git'
+            }
 
-        stage('Build and Package') {
-            echo "Building project using Maven..."
-            sh 'mvn package'
-        }
+            stage('Build and Package') {
+                echo "Building project using Maven..."
+                sh 'mvn package'
+            }
 
-        stage('Artifact Extraction') {
-            echo "Archiving build artifacts..."
-            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-        }
+            stage('Artifact Extraction') {
+                echo "Archiving build artifacts..."
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
 
-        // --- Success message ---
-        echo "Build succeeded for ${env.APP_NAME}"
+            // --- Success message ---
+            echo "Build succeeded for ${env.APP_NAME}"
 
-        // --- Success email ---
-        mail(
-            to: 'sumukhadaring@gmail.com',
-            cc: 'akshathabm20@gmail.com',
-            subject: "SUCCESS: ${env.APP_NAME} Build #${env.BUILD_NUMBER}",
-            body: """Hello Developer,
+            // --- Success email ---
+            mail(
+                to: 'sumukhadaring@gmail.com',
+                cc: 'akshathabm20@gmail.com',
+                subject: "SUCCESS: ${env.APP_NAME} Build #${env.BUILD_NUMBER}",
+                body: """Hello Developer,
 
 Jenkins Pipeline for **${env.JOB_NAME}** completed successfully.
 
@@ -56,18 +57,18 @@ Build Details:
 Best regards,
 Sumukha Upadhyaya
 """
-        )
+            )
 
-    } catch (err) {
-        // --- Failure message ---
-        echo "Build failed for ${env.APP_NAME}: ${err}"
+        } catch (err) {
+            // --- Failure message ---
+            echo "Build failed for ${env.APP_NAME}: ${err}"
 
-        // --- Failure email ---
-        mail(
-            to: 'sumukhadaring@gmail.com',
-            cc: 'akshathabm20@gmail.com',
-            subject: "FAILURE: ${env.APP_NAME} Build #${env.BUILD_NUMBER}",
-            body: """Hello Developer,
+            // --- Failure email ---
+            mail(
+                to: 'sumukhadaring@gmail.com',
+                cc: 'akshathabm20@gmail.com',
+                subject: "FAILURE: ${env.APP_NAME} Build #${env.BUILD_NUMBER}",
+                body: """Hello Developer,
 
 Jenkins Pipeline for **${env.JOB_NAME}** has failed.
 
@@ -80,10 +81,10 @@ Please check the logs to resolve the issue.
 Best regards,
 Sumukha Upadhyaya
 """
-        )
+            )
 
-        // Mark the build as failed
-        currentBuild.result = 'FAILURE'
-        throw err
+            currentBuild.result = 'FAILURE'
+            throw err
+        }
     }
 }
