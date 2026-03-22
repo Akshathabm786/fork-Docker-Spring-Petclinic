@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    image: pet-m-20:latest
+    image: m-5-repo-spring:latest
     build: .
     environment:
       SPRING_MYSQL_URL: ${SPRING_MYSQL_URL}
